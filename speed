@@ -1,5 +1,8 @@
--- Ultimate Speed & Custom Health Bar Hub for Blox Fruits
--- Key: 1w2s3e4e5m
+--[[
+    Ultimate Speed & Health Hub (Blox Fruits)
+    Compatible with: Xeno & All Major Executors
+    Key System: 1w2s3e4e5m
+]]
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -8,23 +11,31 @@ local UserInputService = game:GetService("UserInputService")
 
 local LocalPlayer = Players.LocalPlayer
 
--- 0. تنظيف وتصفية الجلسات القديمة لمنع التكرار أو التعطيل عند إعادة التشغيل
-if getgenv().SpeedHubCleanUp then
-    getgenv().SpeedHubCleanUp()
+-- التنظيف التلقائي لمنع أي تراكم أو تعليق عند إعادة التشغيل
+if getgenv().UniversalSpeedHubCleanUp then
+    getgenv().UniversalSpeedHubCleanUp()
 end
 
 local Connections = {}
 local CorrectKey = "1w2s3e4e5m"
 local KeyUnlocked = false
 
--- إنشاء الواجهة الرئيسية
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "EnhancedSpeedHubV3"
+ScreenGui.Name = "UniversalSpeedHub"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = CoreGui
+
+-- دعم حماية وتشغيل آمن على جميع المحررات (Xeno, Solara, etc.)
+if syn and syn.protect_gui then
+    syn.protect_gui(ScreenGui)
+    ScreenGui.Parent = CoreGui
+elseif gethui then
+    ScreenGui.Parent = gethui()
+else
+    ScreenGui.Parent = CoreGui
+end
 
 ---------------------------------------------------------
--- نافذة المفتاح (Key System)
+-- واجهة مفتاح التفعيل (Key System)
 ---------------------------------------------------------
 local KeyFrame = Instance.new("Frame")
 KeyFrame.Name = "KeyFrame"
@@ -36,25 +47,22 @@ KeyFrame.Active = true
 KeyFrame.Draggable = true
 KeyFrame.Parent = ScreenGui
 
-local KeyUICorner = Instance.new("UICorner")
+local KeyUICorner = Instance.new("UICorner", KeyFrame)
 KeyUICorner.CornerRadius = UDim.new(0, 12)
-KeyUICorner.Parent = KeyFrame
 
-local KeyUIStroke = Instance.new("UIStroke")
+local KeyUIStroke = Instance.new("UIStroke", KeyFrame)
 KeyUIStroke.Color = Color3.fromRGB(0, 170, 255)
 KeyUIStroke.Thickness = 1.8
-KeyUIStroke.Parent = KeyFrame
 
-local KeyTitle = Instance.new("TextLabel")
+local KeyTitle = Instance.new("TextLabel", KeyFrame)
 KeyTitle.Size = UDim2.new(1, 0, 0, 40)
 KeyTitle.BackgroundTransparency = 1
 KeyTitle.Text = "🔑 Key System | أدخل المفتاح"
 KeyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 KeyTitle.TextSize = 15
 KeyTitle.Font = Enum.Font.GothamBold
-KeyTitle.Parent = KeyFrame
 
-local KeyInput = Instance.new("TextBox")
+local KeyInput = Instance.new("TextBox", KeyFrame)
 KeyInput.Size = UDim2.new(0.85, 0, 0, 38)
 KeyInput.Position = UDim2.new(0.075, 0, 0.28, 0)
 KeyInput.BackgroundColor3 = Color3.fromRGB(32, 35, 45)
@@ -63,13 +71,11 @@ KeyInput.Text = ""
 KeyInput.TextColor3 = Color3.fromRGB(0, 255, 170)
 KeyInput.TextSize = 13
 KeyInput.Font = Enum.Font.GothamMedium
-KeyInput.Parent = KeyFrame
 
-local KeyInputCorner = Instance.new("UICorner")
+local KeyInputCorner = Instance.new("UICorner", KeyInput)
 KeyInputCorner.CornerRadius = UDim.new(0, 8)
-KeyInputCorner.Parent = KeyInput
 
-local SubmitBtn = Instance.new("TextButton")
+local SubmitBtn = Instance.new("TextButton", KeyFrame)
 SubmitBtn.Size = UDim2.new(0.85, 0, 0, 36)
 SubmitBtn.Position = UDim2.new(0.075, 0, 0.58, 0)
 SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
@@ -77,13 +83,11 @@ SubmitBtn.Text = "تأكيد المفتاح 🔓"
 SubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 SubmitBtn.TextSize = 13
 SubmitBtn.Font = Enum.Font.GothamBold
-SubmitBtn.Parent = KeyFrame
 
-local SubmitCorner = Instance.new("UICorner")
+local SubmitCorner = Instance.new("UICorner", SubmitBtn)
 SubmitCorner.CornerRadius = UDim.new(0, 8)
-SubmitCorner.Parent = SubmitBtn
 
-local StatusLabel = Instance.new("TextLabel")
+local StatusLabel = Instance.new("TextLabel", KeyFrame)
 StatusLabel.Size = UDim2.new(1, 0, 0, 20)
 StatusLabel.Position = UDim2.new(0, 0, 0.82, 0)
 StatusLabel.BackgroundTransparency = 1
@@ -91,12 +95,11 @@ StatusLabel.Text = ""
 StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
 StatusLabel.TextSize = 11
 StatusLabel.Font = Enum.Font.GothamMedium
-StatusLabel.Parent = KeyFrame
 
 ---------------------------------------------------------
--- نافذة التحكم الرئيسية
+-- الواجهة الرئيسية للتحكم
 ---------------------------------------------------------
-local MainFrame = Instance.new("Frame")
+local MainFrame = Instance.new("Frame", ScreenGui)
 MainFrame.Name = "MainFrame"
 MainFrame.Size = UDim2.new(0, 290, 0, 320)
 MainFrame.Position = UDim2.new(0.5, -145, 0.3, 0)
@@ -105,27 +108,23 @@ MainFrame.BorderSizePixel = 0
 MainFrame.Active = true
 MainFrame.Draggable = true
 MainFrame.Visible = false
-MainFrame.Parent = ScreenGui
 
-local UICorner = Instance.new("UICorner")
+local UICorner = Instance.new("UICorner", MainFrame)
 UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = MainFrame
 
-local UIStroke = Instance.new("UIStroke")
+local UIStroke = Instance.new("UIStroke", MainFrame)
 UIStroke.Color = Color3.fromRGB(0, 170, 255)
 UIStroke.Thickness = 1.8
-UIStroke.Parent = MainFrame
 
-local Title = Instance.new("TextLabel")
+local Title = Instance.new("TextLabel", MainFrame)
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
-Title.Text = "⚡ Speed & Health Hub | V3"
+Title.Text = "⚡ GitHub Hub | Blox Fruits"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 14
 Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
 
--- المتغيرات الأساسية
+-- متغيرات التحكم
 local SpeedEnabled = false
 local SpeedMultiplier = 2
 local MinSpeed = 1
@@ -133,10 +132,10 @@ local MaxSpeed = 10
 local ToggleKey = Enum.KeyCode.L
 
 local HealthBarEnabled = false
-local CurrentHealthStyle = 1 -- 1: Modern Bar, 2: Compact Tag, 3: Minimal Line
+local CurrentHealthStyle = 1
 
--- 1. زر تفعيل السرعة
-local ToggleSpeedBtn = Instance.new("TextButton")
+-- زر السرعة
+local ToggleSpeedBtn = Instance.new("TextButton", MainFrame)
 ToggleSpeedBtn.Size = UDim2.new(0.88, 0, 0, 32)
 ToggleSpeedBtn.Position = UDim2.new(0.06, 0, 0.12, 0)
 ToggleSpeedBtn.BackgroundColor3 = Color3.fromRGB(230, 50, 50)
@@ -144,14 +143,11 @@ ToggleSpeedBtn.Text = "السرعة: [معطل ❌]"
 ToggleSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleSpeedBtn.TextSize = 12
 ToggleSpeedBtn.Font = Enum.Font.GothamBold
-ToggleSpeedBtn.Parent = MainFrame
-
-local SpeedBtnCorner = Instance.new("UICorner")
+local SpeedBtnCorner = Instance.new("UICorner", ToggleSpeedBtn)
 SpeedBtnCorner.CornerRadius = UDim.new(0, 6)
-SpeedBtnCorner.Parent = ToggleSpeedBtn
 
--- 2. شريط تحكم السرعة (Slider)
-local SliderLabel = Instance.new("TextLabel")
+-- شريط السرعة (Slider)
+local SliderLabel = Instance.new("TextLabel", MainFrame)
 SliderLabel.Size = UDim2.new(0.88, 0, 0, 16)
 SliderLabel.Position = UDim2.new(0.06, 0, 0.24, 0)
 SliderLabel.BackgroundTransparency = 1
@@ -160,42 +156,34 @@ SliderLabel.TextColor3 = Color3.fromRGB(0, 230, 255)
 SliderLabel.TextSize = 11
 SliderLabel.Font = Enum.Font.GothamMedium
 SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-SliderLabel.Parent = MainFrame
 
-local SliderFrame = Instance.new("Frame")
+local SliderFrame = Instance.new("Frame", MainFrame)
 SliderFrame.Size = UDim2.new(0.88, 0, 0, 8)
 SliderFrame.Position = UDim2.new(0.06, 0, 0.30, 0)
 SliderFrame.BackgroundColor3 = Color3.fromRGB(35, 38, 48)
 SliderFrame.BorderSizePixel = 0
-SliderFrame.Parent = MainFrame
-
-local SliderFrameCorner = Instance.new("UICorner")
+local SliderFrameCorner = Instance.new("UICorner", SliderFrame)
 SliderFrameCorner.CornerRadius = UDim.new(1, 0)
-SliderFrameCorner.Parent = SliderFrame
 
-local SliderFill = Instance.new("Frame")
+local SliderFill = Instance.new("Frame", SliderFrame)
 SliderFill.Size = UDim2.new((SpeedMultiplier - MinSpeed) / (MaxSpeed - MinSpeed), 0, 1, 0)
 SliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 SliderFill.BorderSizePixel = 0
-SliderFill.Parent = SliderFrame
-
-local SliderFillCorner = Instance.new("UICorner")
+local SliderFillCorner = Instance.new("UICorner", SliderFill)
 SliderFillCorner.CornerRadius = UDim.new(1, 0)
-SliderFillCorner.Parent = SliderFill
 
--- 3. خيارات شريط الصحة (Health Bar Options)
-local HealthTitle = Instance.new("TextLabel")
+-- خيارات الصحة
+local HealthTitle = Instance.new("TextLabel", MainFrame)
 HealthTitle.Size = UDim2.new(0.88, 0, 0, 20)
 HealthTitle.Position = UDim2.new(0.06, 0, 0.36, 0)
 HealthTitle.BackgroundTransparency = 1
-HealthTitle.Text = "❤️ نظام إظهار صحة اللاعبين (Health ESP)"
+HealthTitle.Text = "❤️ نظام صحة اللاعبين (Health ESP)"
 HealthTitle.TextColor3 = Color3.fromRGB(255, 200, 80)
 HealthTitle.TextSize = 12
 HealthTitle.Font = Enum.Font.GothamBold
 HealthTitle.TextXAlignment = Enum.TextXAlignment.Left
-HealthTitle.Parent = MainFrame
 
-local ToggleHealthBtn = Instance.new("TextButton")
+local ToggleHealthBtn = Instance.new("TextButton", MainFrame)
 ToggleHealthBtn.Size = UDim2.new(0.88, 0, 0, 32)
 ToggleHealthBtn.Position = UDim2.new(0.06, 0, 0.44, 0)
 ToggleHealthBtn.BackgroundColor3 = Color3.fromRGB(230, 50, 50)
@@ -203,13 +191,10 @@ ToggleHealthBtn.Text = "شريط الصحة: [معطل ❌]"
 ToggleHealthBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleHealthBtn.TextSize = 12
 ToggleHealthBtn.Font = Enum.Font.GothamBold
-ToggleHealthBtn.Parent = MainFrame
-
-local HealthBtnCorner = Instance.new("UICorner")
+local HealthBtnCorner = Instance.new("UICorner", ToggleHealthBtn)
 HealthBtnCorner.CornerRadius = UDim.new(0, 6)
-HealthBtnCorner.Parent = ToggleHealthBtn
 
-local StyleBtn = Instance.new("TextButton")
+local StyleBtn = Instance.new("TextButton", MainFrame)
 StyleBtn.Size = UDim2.new(0.88, 0, 0, 30)
 StyleBtn.Position = UDim2.new(0.06, 0, 0.56, 0)
 StyleBtn.BackgroundColor3 = Color3.fromRGB(35, 40, 55)
@@ -217,14 +202,11 @@ StyleBtn.Text = "شكل الشريط: [ Mode 1: Modern Bar ]"
 StyleBtn.TextColor3 = Color3.fromRGB(0, 255, 200)
 StyleBtn.TextSize = 11
 StyleBtn.Font = Enum.Font.GothamMedium
-StyleBtn.Parent = MainFrame
-
-local StyleBtnCorner = Instance.new("UICorner")
+local StyleBtnCorner = Instance.new("UICorner", StyleBtn)
 StyleBtnCorner.CornerRadius = UDim.new(0, 6)
-StyleBtnCorner.Parent = StyleBtn
 
--- 4. تخصيص زر الإخفاء
-local KeybindBtn = Instance.new("TextButton")
+-- زر إخفاء الـ UI
+local KeybindBtn = Instance.new("TextButton", MainFrame)
 KeybindBtn.Size = UDim2.new(0.88, 0, 0, 32)
 KeybindBtn.Position = UDim2.new(0.06, 0, 0.78, 0)
 KeybindBtn.BackgroundColor3 = Color3.fromRGB(35, 40, 52)
@@ -232,22 +214,17 @@ KeybindBtn.Text = "زر إخفاء الـ UI: [ L ]"
 KeybindBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
 KeybindBtn.TextSize = 11
 KeybindBtn.Font = Enum.Font.GothamMedium
-KeybindBtn.Parent = MainFrame
-
-local KeybindCorner = Instance.new("UICorner")
+local KeybindCorner = Instance.new("UICorner", KeybindBtn)
 KeybindCorner.CornerRadius = UDim.new(0, 6)
-KeybindCorner.Parent = KeybindBtn
 
 ---------------------------------------------------------
--- برمجة شريط الصحة (Health Bar ESP Engine)
+-- برمجة شريط الصحة (ESP)
 ---------------------------------------------------------
 local HealthGuis = {}
 
 local function RemovePlayerHealthBar(plr)
     if HealthGuis[plr] then
-        if HealthGuis[plr].Gui then
-            HealthGuis[plr].Gui:Destroy()
-        end
+        if HealthGuis[plr].Gui then HealthGuis[plr].Gui:Destroy() end
         HealthGuis[plr] = nil
     end
 end
@@ -269,29 +246,24 @@ local function CreateHealthBar(plr)
         Billboard.ExtentsOffset = Vector3.new(0, 2.5, 0)
         Billboard.Parent = ScreenGui
 
-        local Frame = Instance.new("Frame")
+        local Frame = Instance.new("Frame", Billboard)
         Frame.Size = UDim2.new(1, 0, 1, 0)
         Frame.BackgroundTransparency = 1
-        Frame.Parent = Billboard
 
-        if CurrentHealthStyle == 1 then -- Modern Bar
+        if CurrentHealthStyle == 1 then
             Billboard.Size = UDim2.new(0, 130, 0, 24)
             Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
             Frame.BackgroundTransparency = 0.3
-            local corner = Instance.new("UICorner", Frame)
-            corner.CornerRadius = UDim.new(0, 6)
+            Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
 
-            local Fill = Instance.new("Frame")
+            local Fill = Instance.new("Frame", Frame)
             Fill.Name = "Fill"
             Fill.Size = UDim2.new(humanoid.Health / humanoid.MaxHealth, 0, 1, 0)
             Fill.BackgroundColor3 = Color3.fromRGB(0, 220, 100)
             Fill.BorderSizePixel = 0
-            Fill.Parent = Frame
+            Instance.new("UICorner", Fill).CornerRadius = UDim.new(0, 6)
 
-            local fillCorner = Instance.new("UICorner", Fill)
-            fillCorner.CornerRadius = UDim.new(0, 6)
-
-            local Text = Instance.new("TextLabel")
+            local Text = Instance.new("TextLabel", Frame)
             Text.Name = "Label"
             Text.Size = UDim2.new(1, 0, 1, 0)
             Text.BackgroundTransparency = 1
@@ -299,16 +271,14 @@ local function CreateHealthBar(plr)
             Text.TextColor3 = Color3.fromRGB(255, 255, 255)
             Text.TextSize = 10
             Text.Font = Enum.Font.GothamBold
-            Text.Parent = Frame
 
-        elseif CurrentHealthStyle == 2 then -- Compact Tag
+        elseif CurrentHealthStyle == 2 then
             Billboard.Size = UDim2.new(0, 100, 0, 18)
             Frame.BackgroundColor3 = Color3.fromRGB(30, 35, 45)
             Frame.BackgroundTransparency = 0.1
-            local corner = Instance.new("UICorner", Frame)
-            corner.CornerRadius = UDim.new(0, 10)
+            Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 10)
 
-            local Text = Instance.new("TextLabel")
+            local Text = Instance.new("TextLabel", Frame)
             Text.Name = "Label"
             Text.Size = UDim2.new(1, 0, 1, 0)
             Text.BackgroundTransparency = 1
@@ -316,20 +286,18 @@ local function CreateHealthBar(plr)
             Text.TextColor3 = Color3.fromRGB(0, 255, 150)
             Text.TextSize = 11
             Text.Font = Enum.Font.GothamBold
-            Text.Parent = Frame
 
-        elseif CurrentHealthStyle == 3 then -- Minimal Line
+        elseif CurrentHealthStyle == 3 then
             Billboard.Size = UDim2.new(0, 80, 0, 6)
             Frame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
             Frame.BackgroundTransparency = 0.2
-            local corner = Instance.new("UICorner", Frame)
+            Instance.new("UICorner", Frame)
 
-            local Fill = Instance.new("Frame")
+            local Fill = Instance.new("Frame", Frame)
             Fill.Name = "Fill"
             Fill.Size = UDim2.new(humanoid.Health / humanoid.MaxHealth, 0, 1, 0)
             Fill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
             Fill.BorderSizePixel = 0
-            Fill.Parent = Frame
         end
 
         HealthGuis[plr] = { Gui = Billboard, Humanoid = humanoid, TargetFrame = Frame }
@@ -340,24 +308,18 @@ local function CreateHealthBar(plr)
 end
 
 local function RefreshHealthBars()
-    for plr, _ in pairs(HealthGuis) do
-        RemovePlayerHealthBar(plr)
-    end
+    for plr, _ in pairs(HealthGuis) do RemovePlayerHealthBar(plr) end
     if HealthBarEnabled then
-        for _, plr in ipairs(Players:GetPlayers()) do
-            CreateHealthBar(plr)
-        end
+        for _, plr in ipairs(Players:GetPlayers()) do CreateHealthBar(plr) end
     end
 end
 
--- حلقة تحديث قراءات الصحة وتدفق الحركة
 table.insert(Connections, RunService.RenderStepped:Connect(function()
     if HealthBarEnabled then
         for plr, data in pairs(HealthGuis) do
-            if data and data.Humanoid and data.Gui and data.TargetFrame then
+            if data and data.Humanoid and data.TargetFrame then
                 local hum = data.Humanoid
                 local percent = math.clamp(hum.Health / hum.MaxHealth, 0, 1)
-
                 if CurrentHealthStyle == 1 then
                     local fill = data.TargetFrame:FindFirstChild("Fill")
                     local lbl = data.TargetFrame:FindFirstChild("Label")
@@ -382,7 +344,7 @@ end))
 table.insert(Connections, Players.PlayerRemoving:Connect(RemovePlayerHealthBar))
 
 ---------------------------------------------------------
--- الأحداث والتفاعلات للـ UI
+-- التفاعلات والأزرار
 ---------------------------------------------------------
 SubmitBtn.MouseButton1Click:Connect(function()
     if KeyInput.Text == CorrectKey then
@@ -419,12 +381,7 @@ ToggleHealthBtn.MouseButton1Click:Connect(function()
     RefreshHealthBars()
 end)
 
-local StyleNames = {
-    [1] = "Mode 1: Modern Bar",
-    [2] = "Mode 2: Compact Tag",
-    [3] = "Mode 3: Minimal Line"
-}
-
+local StyleNames = { [1] = "Mode 1: Modern Bar", [2] = "Mode 2: Compact Tag", [3] = "Mode 3: Minimal Line" }
 StyleBtn.MouseButton1Click:Connect(function()
     CurrentHealthStyle = CurrentHealthStyle + 1
     if CurrentHealthStyle > 3 then CurrentHealthStyle = 1 end
@@ -441,7 +398,6 @@ end)
 
 table.insert(Connections, UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed or not KeyUnlocked then return end
-
     if ListeningForKey then
         if input.UserInputType == Enum.UserInputType.Keyboard then
             ToggleKey = input.KeyCode
@@ -454,7 +410,7 @@ table.insert(Connections, UserInputService.InputBegan:Connect(function(input, ga
     end
 end))
 
--- منطق السحب بالماوس للـ Slider
+-- Slider Logic
 local Dragging = false
 local function UpdateSlider(input)
     local pos = math.clamp((input.Position.X - SliderFrame.AbsolutePosition.X) / SliderFrame.AbsoluteSize.X, 0, 1)
@@ -482,7 +438,7 @@ table.insert(Connections, UserInputService.InputChanged:Connect(function(input)
     end
 end))
 
--- محرك الحركة للسرعة
+-- Heartbeat Speed Engine
 table.insert(Connections, RunService.Heartbeat:Connect(function(delta)
     if SpeedEnabled and KeyUnlocked then
         local char = LocalPlayer.Character
@@ -496,15 +452,11 @@ table.insert(Connections, RunService.Heartbeat:Connect(function(delta)
     end
 end))
 
--- دالة التنظيف عند إعادة التشغيل
-getgenv().SpeedHubCleanUp = function()
+-- دالة التنظيف
+getgenv().UniversalSpeedHubCleanUp = function()
     for _, conn in ipairs(Connections) do
         if conn then conn:Disconnect() end
     end
-    for plr, _ in pairs(HealthGuis) do
-        RemovePlayerHealthBar(plr)
-    end
-    if CoreGui:FindFirstChild("EnhancedSpeedHubV3") then
-        CoreGui.EnhancedSpeedHubV3:Destroy()
-    end
+    for plr, _ in pairs(HealthGuis) do RemovePlayerHealthBar(plr) end
+    if ScreenGui then ScreenGui:Destroy() end
 end
