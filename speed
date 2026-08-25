@@ -1,0 +1,320 @@
+-- Modern & Smooth CFrame Speed Hub for Blox Fruits with Key System
+-- Key: 1w2s3e4e5m
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- تنظيف الواجهة القديمة إن وجدت
+if CoreGui:FindFirstChild("EnhancedSpeedHub") then
+    CoreGui.EnhancedSpeedHub:Destroy()
+end
+
+local CorrectKey = "1w2s3e4e5m"
+
+-- 1. إنشاء الواجهة الرئيسية (Parent ScreenGui)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "EnhancedSpeedHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = CoreGui
+
+---------------------------------------------------------
+-- نافذة المفتاح (Key System Frame)
+---------------------------------------------------------
+local KeyFrame = Instance.new("Frame")
+KeyFrame.Name = "KeyFrame"
+KeyFrame.Size = UDim2.new(0, 300, 0, 180)
+KeyFrame.Position = UDim2.new(0.5, -150, 0.4, -90)
+KeyFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
+KeyFrame.BorderSizePixel = 0
+KeyFrame.Active = true
+KeyFrame.Draggable = true
+KeyFrame.Parent = ScreenGui
+
+local KeyUICorner = Instance.new("UICorner")
+KeyUICorner.CornerRadius = UDim.new(0, 12)
+KeyUICorner.Parent = KeyFrame
+
+local KeyUIStroke = Instance.new("UIStroke")
+KeyUIStroke.Color = Color3.fromRGB(0, 170, 255)
+KeyUIStroke.Thickness = 1.8
+KeyUIStroke.Parent = KeyFrame
+
+local KeyTitle = Instance.new("TextLabel")
+KeyTitle.Size = UDim2.new(1, 0, 0, 40)
+KeyTitle.BackgroundTransparency = 1
+KeyTitle.Text = "🔑 Key System | أدخل المفتاح"
+KeyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+KeyTitle.TextSize = 15
+KeyTitle.Font = Enum.Font.GothamBold
+KeyTitle.Parent = KeyFrame
+
+local KeyInput = Instance.new("TextBox")
+KeyInput.Size = UDim2.new(0.85, 0, 0, 38)
+KeyInput.Position = UDim2.new(0.075, 0, 0.28, 0)
+KeyInput.BackgroundColor3 = Color3.fromRGB(32, 35, 45)
+KeyInput.PlaceholderText = "اكتب كلمة السر هنا..."
+KeyInput.Text = ""
+KeyInput.TextColor3 = Color3.fromRGB(0, 255, 170)
+KeyInput.TextSize = 13
+KeyInput.Font = Enum.Font.GothamMedium
+KeyInput.Parent = KeyFrame
+
+local KeyInputCorner = Instance.new("UICorner")
+KeyInputCorner.CornerRadius = UDim.new(0, 8)
+KeyInputCorner.Parent = KeyInput
+
+local SubmitBtn = Instance.new("TextButton")
+SubmitBtn.Size = UDim2.new(0.85, 0, 0, 36)
+SubmitBtn.Position = UDim2.new(0.075, 0, 0.58, 0)
+SubmitBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+SubmitBtn.Text = "تأكيد المفتاح 🔓"
+SubmitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+SubmitBtn.TextSize = 13
+SubmitBtn.Font = Enum.Font.GothamBold
+SubmitBtn.Parent = KeyFrame
+
+local SubmitCorner = Instance.new("UICorner")
+SubmitCorner.CornerRadius = UDim.new(0, 8)
+SubmitCorner.Parent = SubmitBtn
+
+local StatusLabel = Instance.new("TextLabel")
+StatusLabel.Size = UDim2.new(1, 0, 0, 20)
+StatusLabel.Position = UDim2.new(0, 0, 0.82, 0)
+StatusLabel.BackgroundTransparency = 1
+StatusLabel.Text = ""
+StatusLabel.TextColor3 = Color3.fromRGB(255, 80, 80)
+StatusLabel.TextSize = 11
+StatusLabel.Font = Enum.Font.GothamMedium
+StatusLabel.Parent = KeyFrame
+
+---------------------------------------------------------
+-- نافذة التحكم الرئيسية بالسرعة (تكون مخفية في البداية)
+---------------------------------------------------------
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 280, 0, 230)
+MainFrame.Position = UDim2.new(0.5, -140, 0.35, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 22, 28)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Visible = false -- مخفية لحين إدخال المفتاح
+MainFrame.Parent = ScreenGui
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 12)
+UICorner.Parent = MainFrame
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(0, 170, 255)
+UIStroke.Thickness = 1.8
+UIStroke.Parent = MainFrame
+
+-- العنوان
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.BackgroundTransparency = 1
+Title.Text = "⚡ Speed Hub | V2"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.Parent = MainFrame
+
+-- 2. إعدادات المتغيرات
+local SpeedEnabled = false
+local SpeedMultiplier = 2
+local MinSpeed = 1
+local MaxSpeed = 10
+local ToggleKey = Enum.KeyCode.L -- الزر الافتراضي لإخفاء الواجهة
+
+-- 3. زر التفعيل المباشر
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Size = UDim2.new(0.88, 0, 0, 35)
+ToggleBtn.Position = UDim2.new(0.06, 0, 0.17, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(230, 50, 50)
+ToggleBtn.Text = "إيقاف السرعة ❌"
+ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleBtn.TextSize = 13
+ToggleBtn.Font = Enum.Font.GothamBold
+ToggleBtn.Parent = MainFrame
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 8)
+BtnCorner.Parent = ToggleBtn
+
+-- 4. شريط السحب لتغيير السرعة (Slider)
+local SliderLabel = Instance.new("TextLabel")
+SliderLabel.Size = UDim2.new(0.88, 0, 0, 18)
+SliderLabel.Position = UDim2.new(0.06, 0, 0.35, 0)
+SliderLabel.BackgroundTransparency = 1
+SliderLabel.Text = "مستوى السرعة: " .. tostring(SpeedMultiplier) .. "x"
+SliderLabel.TextColor3 = Color3.fromRGB(0, 230, 255)
+SliderLabel.TextSize = 12
+SliderLabel.Font = Enum.Font.GothamMedium
+SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+SliderLabel.Parent = MainFrame
+
+local SliderFrame = Instance.new("Frame")
+SliderFrame.Size = UDim2.new(0.88, 0, 0, 10)
+SliderFrame.Position = UDim2.new(0.06, 0, 0.45, 0)
+SliderFrame.BackgroundColor3 = Color3.fromRGB(35, 38, 48)
+SliderFrame.BorderSizePixel = 0
+SliderFrame.Parent = MainFrame
+
+local SliderFrameCorner = Instance.new("UICorner")
+SliderFrameCorner.CornerRadius = UDim.new(1, 0)
+SliderFrameCorner.Parent = SliderFrame
+
+local SliderFill = Instance.new("Frame")
+SliderFill.Size = UDim2.new((SpeedMultiplier - MinSpeed) / (MaxSpeed - MinSpeed), 0, 1, 0)
+SliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+SliderFill.BorderSizePixel = 0
+SliderFill.Parent = SliderFrame
+
+local SliderFillCorner = Instance.new("UICorner")
+SliderFillCorner.CornerRadius = UDim.new(1, 0)
+SliderFillCorner.Parent = SliderFill
+
+-- 5. خيارات التحكم السريع بالسرعة
+local QuickFrame = Instance.new("Frame")
+QuickFrame.Size = UDim2.new(0.88, 0, 0, 26)
+QuickFrame.Position = UDim2.new(0.06, 0, 0.54, 0)
+QuickFrame.BackgroundTransparency = 1
+QuickFrame.Parent = MainFrame
+
+local SpeedsList = { { Name = "بطيء", Val = 1.5 }, { Name = "متوسط", Val = 3 }, { Name = "سريع", Val = 5 }, { Name = "خارق", Val = 8 } }
+for i, item in ipairs(SpeedsList) do
+    local QuickBtn = Instance.new("TextButton")
+    QuickBtn.Size = UDim2.new(0.22, 0, 1, 0)
+    QuickBtn.Position = UDim2.new((i - 1) * 0.26, 0, 0, 0)
+    QuickBtn.BackgroundColor3 = Color3.fromRGB(40, 44, 56)
+    QuickBtn.Text = item.Name
+    QuickBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    QuickBtn.TextSize = 11
+    QuickBtn.Font = Enum.Font.GothamBold
+    QuickBtn.Parent = QuickFrame
+
+    local QCorner = Instance.new("UICorner")
+    QCorner.CornerRadius = UDim.new(0, 6)
+    QCorner.Parent = QuickBtn
+
+    QuickBtn.MouseButton1Click:Connect(function()
+        SpeedMultiplier = item.Val
+        SliderFill.Size = UDim2.new((SpeedMultiplier - MinSpeed) / (MaxSpeed - MinSpeed), 0, 1, 0)
+        SliderLabel.Text = "مستوى السرعة: " .. tostring(SpeedMultiplier) .. "x"
+    end)
+end
+
+-- 6. زر تخصيص كبسة الإخفاء/الإظهار (Keybind Selector)
+local KeybindBtn = Instance.new("TextButton")
+KeybindBtn.Size = UDim2.new(0.88, 0, 0, 32)
+KeybindBtn.Position = UDim2.new(0.06, 0, 0.73, 0)
+KeybindBtn.BackgroundColor3 = Color3.fromRGB(35, 40, 52)
+KeybindBtn.Text = "زر الإخفاء: [ L ]"
+KeybindBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+KeybindBtn.TextSize = 12
+KeybindBtn.Font = Enum.Font.GothamMedium
+KeybindBtn.Parent = MainFrame
+
+local KeybindCorner = Instance.new("UICorner")
+KeybindCorner.CornerRadius = UDim.new(0, 6)
+KeybindCorner.Parent = KeybindBtn
+
+local ListeningForKey = false
+KeybindBtn.MouseButton1Click:Connect(function()
+    ListeningForKey = true
+    KeybindBtn.Text = "اضغط أي زر الآن..."
+    KeybindBtn.TextColor3 = Color3.fromRGB(255, 200, 50)
+end)
+
+---------------------------------------------------------
+-- التحقق من المفتاح وتفعيل الواجهة
+---------------------------------------------------------
+local KeyUnlocked = false
+
+SubmitBtn.MouseButton1Click:Connect(function()
+    if KeyInput.Text == CorrectKey then
+        KeyUnlocked = true
+        KeyFrame:Destroy()
+        MainFrame.Visible = true
+    else
+        StatusLabel.Text = "المفتاح غير صحيح، حاول مرة أخرى!"
+        task.wait(2)
+        StatusLabel.Text = ""
+    end
+end)
+
+-- 7. استقبال الإدخالات لتنسيق زر الإخفاء أو إظهار/إخفاء الواجهة
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed or not KeyUnlocked then return end
+
+    if ListeningForKey then
+        if input.UserInputType == Enum.UserInputType.Keyboard then
+            ToggleKey = input.KeyCode
+            KeybindBtn.Text = "زر الإخفاء: [ " .. tostring(ToggleKey.Name) .. " ]"
+            KeybindBtn.TextColor3 = Color3.fromRGB(220, 220, 220)
+            ListeningForKey = false
+        end
+    elseif input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == ToggleKey then
+        MainFrame.Visible = not MainFrame.Visible
+    end
+end)
+
+-- 8. منطق السحب بالماوس للـ Slider
+local Dragging = false
+local function UpdateSlider(input)
+    local pos = math.clamp((input.Position.X - SliderFrame.AbsolutePosition.X) / SliderFrame.AbsoluteSize.X, 0, 1)
+    SliderFill.Size = UDim2.new(pos, 0, 1, 0)
+    SpeedMultiplier = math.floor((MinSpeed + (pos * (MaxSpeed - MinSpeed))) * 10) / 10
+    SliderLabel.Text = "مستوى السرعة: " .. tostring(SpeedMultiplier) .. "x"
+end
+
+SliderFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        Dragging = true
+        UpdateSlider(input)
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        Dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if Dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        UpdateSlider(input)
+    end
+end)
+
+-- 9. زر التفعيل
+ToggleBtn.MouseButton1Click:Connect(function()
+    SpeedEnabled = not SpeedEnabled
+    if SpeedEnabled then
+        ToggleBtn.Text = "تفعيل السرعة ⚡ [شغال]"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 100)
+    else
+        ToggleBtn.Text = "إيقاف السرعة ❌ [معطل]"
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(230, 50, 50)
+    end
+end)
+
+-- 10. محرك الحركة السلسة (Heartbeat Loop)
+RunService.Heartbeat:Connect(function(delta)
+    if SpeedEnabled and KeyUnlocked then
+        local char = LocalPlayer.Character
+        if char then
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            local humanoid = char:FindFirstChild("Humanoid")
+            
+            if hrp and humanoid and humanoid.MoveDirection.Magnitude > 0 then
+                hrp.CFrame = hrp.CFrame + (humanoid.MoveDirection * (SpeedMultiplier * 14) * delta)
+            end
+        end
+    end
+end)
